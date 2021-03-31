@@ -5,6 +5,11 @@ body {
     padding: 1em;
 }
 
+button:hover,
+button:active {
+    cursor: pointer;
+}
+
 .hidden {
     display: none;
 }

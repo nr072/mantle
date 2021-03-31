@@ -1,6 +1,8 @@
 <template>
     <div>
 
+        <notification-area :message="message"></notification-area>
+
         <section v-if="tasks.length > 0">
             <h1>Tasks</h1>
             <ul>
@@ -24,18 +26,25 @@
 <script>
 
     import Task from './Task.vue';
+    import NotificationArea from './NotificationArea.vue';
 
     export default {
 
-        components: { Task },
+        components: { Task, NotificationArea },
 
         data() {
             return {
+
                 tasks: [],
+
+                // The 'canShow' variable determines whether the notification
+                // will be shown or not.
                 message: {
+                    canShow: false,
                     type: "",
                     content: ""
                 }
+
             }
         },
 
@@ -70,6 +79,7 @@
                     .then(response => {
                         if (response.status === 200) {
                             this.message = {
+                                canShow: true,
                                 type: "success",
                                 content: "Due time updated successfully!"
                             };
@@ -85,21 +95,31 @@
             // Error message is set.
             handleError(error) {
 
-                this.message.type = "error";
+                // The error message text is set based on the nature of
+                // the error. For example, if there is a network error,
+                // the 'response' property is not present; in that case,
+                // the 'message' value is used.
+                let text = "";
 
-                if (error.response !== undefined) {
+                if (error.response === undefined) {
 
-                    switch (error.response.status) {
-                        case 422:
-                            this.message.content = "Validation error";
-                            return;
-                        default:
-                            this.message.content = error.response.data.message;
-                    }
+                    text = error.message;
 
                 } else {
-                    this.message.content = error.message;
+
+                    const status = error.response.status;
+                    text = (
+                        status === 422 ? "Validation error"
+                            : error.response.data.message
+                    );
+
                 }
+
+                this.message = {
+                    canShow: true,
+                    type: "error",
+                    content: text
+                };
 
             },
 
