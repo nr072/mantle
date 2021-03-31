@@ -4,8 +4,53 @@
         <span>{{ task.name }}</span>
         <small :title="niceDueTime">{{ timeLeftString }}</small>
 
+        <button :class="{ hidden: isSettingDueTime }"
+            @click="isSettingDueTime = true"
+        >Set due time</button>
+
+        <div :class="{ hidden: !isSettingDueTime }">
+            
+            <input type="date"
+                :min="now.toISOString().split('T')[0]"
+                :max="nowPlus1Year.toISOString().split('T')[0]"
+                v-model="dateInput"
+            >
+            <input type="text" class="time-input"
+                placeholder="23:01"
+                v-model="timeInput"
+                @keyup.enter="setDueTime"
+            >
+
+            <button
+                @click="setDueTime"
+                :disabled="!canShowDTIConfirmBtn"
+            >Confirm</button>
+
+            <button class="btn"
+                @click="isSettingDueTime = false; clearDateTimeInputs();"
+            >Cancel</button>
+
+        </div>
+
+        <button
+            :class="{ hidden: this.task.due_time === null }"
+            @click="removeDueTime"
+        >Remove due time</button>
+
     </div>
 </template>
+
+
+
+
+
+<style scoped>
+    
+    .time-input {
+        max-width: 50px;
+    }
+
+</style>
 
 
 
@@ -36,7 +81,18 @@
 
                 // The interval ID is saved so that the 'setInterval' instance
                 // can be cleared when it is past due time.
-                iid: 0
+                iid: 0,
+
+                // Some elements behave differently based on whether the
+                // user is setting due time or not. (For example, usually,
+                // the inputs are hidden; but when they are revealed, the
+                // button that revealed them gets hidden.
+                isSettingDueTime: false,
+
+                // The date and the time for the new due time are obtained
+                // as different inputs from the user. They are later merged.
+                dateInput: "",
+                timeInput: ""
 
             }
         },
@@ -113,6 +169,23 @@
                         ? new Date(this.task.due_time).toLocaleString()
                         : ""
                 );
+            },
+
+            // A date 365 days later is used to set the maximum limit
+            // for the due time's date input.
+            nowPlus1Year() {
+                return new Date( this.now.getTime() + (3600000 * 24 * 365) );
+            },
+
+            // The confirm button with the date-time setters can be shown
+            // only when the inputs are revealed and both the date and the
+            // time input have a value.
+            canShowDTIConfirmBtn() {
+                return (
+                    this.isSettingDueTime
+                    && this.dateInput !== ""
+                    && this.timeInput.trim() !== ""
+                );
             }
 
         },
@@ -137,6 +210,8 @@
 
             },
 
+
+
             // At a regular interval, the current time is updated, which
             // prompts Vue to update the 'left time'. When due time is
             // past (or very close to it), the 'setInterval' instance is
@@ -146,6 +221,56 @@
                 if (this.secondsLeft < 60 && this.iid > 0) {
                     clearInterval(this.iid);
                 }
+            },
+
+
+
+            // If a valid date-time is entered, the task's due time is
+            // updated (the parent component actually does the update),
+            // and the input fields are cleared and hidden again.
+            setDueTime() {
+
+                if (this.dateInput === "" || this.timeInput.trim() === "") {
+                    alert("Date-time not provided");
+                    return;
+                }
+
+                const newDueTime = this.dateInput + " " + this.timeInput.trim();
+                if ( isNaN( new Date(newDueTime).getTime() ) ) {
+                    alert("Invalid date-time input");
+                    return;
+                }
+
+                // A custom event is emitted so that the parent component
+                // can update the due time.
+                this.$emit("due-time-update", {
+                    id: this.task.id,
+                    due_time: newDueTime
+                });
+
+                // Input fields are cleared and hidden.
+                this.clearDateTimeInputs();
+                this.isSettingDueTime = false;
+
+            },
+
+
+
+            // Removing due time works the same way as updating it, except
+            // the new value is 'null' in this case.
+            removeDueTime() {
+                this.$emit('due-time-update', {
+                    id: this.task.id,
+                    due_time: null
+                });
+            },
+
+
+
+            // Due time setter input fields are cleared.
+            clearDateTimeInputs() {
+                this.dateInput = "";
+                this.timeInput = "";
             }
 
         }

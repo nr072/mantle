@@ -4,3 +4,7 @@ body {
     font: 14px sans-serif;
     padding: 1em;
 }
+
+.hidden {
+    display: none;
+}
