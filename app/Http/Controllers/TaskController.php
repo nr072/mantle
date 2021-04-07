@@ -16,7 +16,12 @@ class TaskController extends Controller
      */
     public function index()
     {
-        return Task::all();
+        $tasks = Task::select('id', 'name', 'due_time')
+            ->orderByRaw('due_time is null, due_time')
+            ->limit(10)
+            ->get();
+
+        return $tasks;
     }
 
     /**
