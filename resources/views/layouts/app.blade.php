@@ -8,7 +8,7 @@
 
         <title>Mantle | @yield('tab-title')</title>
 
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <link rel="stylesheet" href="{{ mix('css/app.css') }}">
 
         @yield('styles')
 
@@ -20,7 +20,7 @@
         </main>
     </body>
 
-    <script type="text/javascript" src="{{ asset('js/app.js') }}"></script>
+    <script type="text/javascript" src="{{ mix('js/app.js') }}"></script>
 
     @yield('scripts')
 
