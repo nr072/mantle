@@ -18,7 +18,7 @@ class TaskController extends Controller
     {
         $tasks = Task::select('id', 'name', 'due_time')
             ->orderByRaw('due_time is null, due_time')
-            ->limit(10)
+            ->limit(20)
             ->get();
 
         return $tasks;
@@ -32,7 +32,15 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'bail|required|string|max:150|unique:tasks',
+            'dueTime' => 'bail|nullable|date'
+        ]);
+
+        $newTask = Task::create([
+            'name' => $validatedData['name'],
+            'due_time' => $validatedData['dueTime'] ?? null
+        ]);
     }
 
     /**
@@ -57,16 +65,14 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        // The new value for due time can also be 'null' which is used
-        // to remove an existing due time.
         $validatedData = $request->validate([
-            'due_time' => 'required|bail|date|nullable'
+            'id' => 'bail|required|numeric|min:1',
+            'dueTime' => 'bail|date'
         ]);
 
-        $task->due_time = $validatedData['due_time'];
+        // If no new due time is provided, the existing one is removed.
+        $task->due_time = $validatedData['dueTime'] ?? null;
         $task->save();
-
-        return response(null);
     }
 
 
@@ -79,6 +85,6 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $task->delete();
     }
 }

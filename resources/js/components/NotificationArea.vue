@@ -4,7 +4,7 @@
         <div v-if="message.canShow">
             <span>{{ message.type }}: {{ message.content }}</span>
             <button
-                @click="message = {}"
+                @click="$emit('notification-clear', {})"
                 title="Dismiss notification"
             >&times;</button>
         </div>

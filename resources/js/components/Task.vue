@@ -9,7 +9,7 @@
         >Set due time</button>
 
         <div :class="{ hidden: !isSettingDueTime }">
-            
+
             <input type="date"
                 :min="now.toISOString().split('T')[0]"
                 :max="nowPlus1Year.toISOString().split('T')[0]"
@@ -26,16 +26,21 @@
                 :disabled="!canShowDTIConfirmBtn"
             >Confirm</button>
 
-            <button class="btn"
+            <button
                 @click="isSettingDueTime = false; clearDateTimeInputs();"
             >Cancel</button>
 
         </div>
 
         <button
-            :class="{ hidden: this.task.due_time === null }"
-            @click="removeDueTime"
+            :class="{ hidden: task.due_time === null || isSettingDueTime }"
+            @click="$emit('due-time-update', { id: task.id })"
         >Remove due time</button>
+
+        <button
+            :class="{ hidden: isSettingDueTime }"
+            @click="$emit('task-removal', { id: task.id })"
+        >Remove task</button>
 
     </div>
 </template>
@@ -45,7 +50,7 @@
 
 
 <style scoped>
-    
+
     .time-input {
         max-width: 50px;
     }
@@ -245,24 +250,13 @@
                 // can update the due time.
                 this.$emit("due-time-update", {
                     id: this.task.id,
-                    due_time: newDueTime
+                    dueTime: newDueTime
                 });
 
                 // Input fields are cleared and hidden.
                 this.clearDateTimeInputs();
                 this.isSettingDueTime = false;
 
-            },
-
-
-
-            // Removing due time works the same way as updating it, except
-            // the new value is 'null' in this case.
-            removeDueTime() {
-                this.$emit('due-time-update', {
-                    id: this.task.id,
-                    due_time: null
-                });
             },
 
 
