@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Task;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class TaskController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        // Tasks with due times come first, ordered by their due times.
+        return Task::orderByRaw('due_time is null, due_time')
+            ->select('id', 'name', 'due_time as dueTime')
+            ->limit(20)
+            ->get();
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Task  $task
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Task $task)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Task  $task
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Task $task)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Task  $task
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, Task $task)
+    {
+        $validatedData = $request->validate([
+            'id' => 'required|bail',
+            'name' => 'bail|string|max:150',
+            'dueTime' => 'bail|nullable|date',
+            'isDone' => 'bail|boolean'
+        ]);
+
+        // If keys exists, their values are set/updated.
+        if (isset($validatedData['name'])) {
+            $task->name = $validatedData['name'];
+        }
+        if (isset($validatedData['isDone'])) {
+            $task->is_done = $validatedData['isDone'];
+        }
+
+        // If the 'dueTime' key exists and has 'null' as its value, it
+        // means that due time is supposed to be removed. Otherwise, if
+        // the key exists, due time is simply updated.
+        if (array_key_exists('dueTime', $validatedData)) {
+            $task->due_time = (
+                $validatedData['dueTime'] == 'null'
+                    ? null
+                    : $validatedData['dueTime']
+            );
+        }
+
+        $task->save();
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Task  $task
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Task $task)
+    {
+        $task->delete();
+    }
+}
