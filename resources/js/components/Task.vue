@@ -38,7 +38,7 @@
 
             <div>
                 <button @click="updateTask">Save</button>
-                <button @click="isEditing = false">Cancel</button>
+                <button @click="clearInputs(); isEditing = false;">Cancel</button>
             </div>
 
         </div>
@@ -197,9 +197,20 @@
                     dueTime: null
                 });
 
+                this.clearInputs();
+
                 // The edit section is hidden.
                 this.isEditing = false;
 
+            },
+
+
+
+            // Name, date and time inputs are cleared.
+            clearInputs() {
+                this.newName = '';
+                this.newDate = '';
+                this.newTime = '';
             }
 
         }
