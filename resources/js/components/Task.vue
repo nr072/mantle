@@ -34,7 +34,7 @@
                 placeholder="23:01"
             >
 
-            <button @click="removeDueTime">Remove time</button>
+            <button v-if="task.dueTime" @click="removeDueTime">Remove time</button>
 
             <div>
                 <button @click="updateTask">Save</button>
