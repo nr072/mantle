@@ -23,7 +23,7 @@
 
         <div>
             <button @click="updateTask">Save</button>
-            <button @click="$emit('edit-cancellation');">Cancel</button>
+            <button @click="resetInputs(); $emit('edit-cancellation');">Cancel</button>
         </div>
 
     </div>
