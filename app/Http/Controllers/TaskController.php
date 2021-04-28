@@ -17,7 +17,7 @@ class TaskController extends Controller
     {
         // Tasks with due times come first, ordered by their due times.
         return Task::orderByRaw('due_time is null, due_time')
-            ->select('id', 'name', 'due_time as dueTime')
+            ->select('id', 'name', 'due_time as dueTimeUtc')
             ->limit(20)
             ->get();
     }
@@ -40,7 +40,17 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'bail|required|string|max:150',
+            'dueTime' => 'bail|nullable|date'
+        ]);
+
+        $task = new Task;
+        $task->name = $validatedData['name'];
+        if (isset($validatedData['dueTime'])) {
+            $task->due_time = $validatedData['dueTime'];
+        }
+        $task->save();
     }
 
     /**

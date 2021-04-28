@@ -4,10 +4,24 @@
         <ul>
             <task v-for="task of tasks" :key="task.id"
                 :task="task"
+                :newDateMinValue="newDateMinValue"
+                :newDateMaxValue="newDateMaxValue"
                 @task-update="updateTask"
                 @task-removal="removeTask"
             ></task>
         </ul>
+
+        <button v-show="!isAddingTask"
+            @click="showAdderSection"
+        >Add task</button>
+
+        <task-adder v-show="isAddingTask"
+            ref="taskAdderComp"
+            :newDateMinValue="newDateMinValue"
+            :newDateMaxValue="newDateMaxValue"
+            @task-update="addTask"
+            @edit-cancellation="isAddingTask = false"
+        ></task-adder>
 
     </div>
 </template>
@@ -19,21 +33,53 @@
 <script>
 
     import Task from './Task.vue';
+    import TaskAdder from './TaskEditor.vue';
 
     export default {
 
-        components: { Task },
+        components: {
+
+            Task,
+            TaskAdder // Used as both an editor and an adder
+
+        },
 
         data() {
             return {
     
-                tasks: []
+                tasks: [],
+
+                // Used to show/hide the section for adding a new task.
+                isAddingTask: false,
+
+                // Today's date is used to set both a minimum value and
+                // a maximum value for setting a due time.
+                now: new Date()
 
             }
         },
 
+        computed: {
+
+            // Today's date and a date from 1 year ahead are used to set
+            // the minimum and the maximum values for setting due time.
+            // Since these values are unlikely to change much in a single
+            // session (before the user closes the browser tab), these 2
+            // are passed to all task editor components.
+            newDateMinValue() {
+                return this.now.toISOString().split('T')[0];
+            },
+            newDateMaxValue() {
+                const nowPlus1Year = new Date(this.now.getTime() + 31536000000);
+                return nowPlus1Year.toISOString().split('T')[0];
+            }
+
+        },
+
         mounted() {
+
             this.fetchTasks();
+
         },
 
         methods: {
@@ -48,8 +94,9 @@
                     .catch(error => alert(error));
             },
 
-
-
+            // Since data is passed from task editor components, which
+            // do not have task IDs, the IDs are set here before hitting
+            // the API.
             updateTask(data) {
                 const taskId = data.id;
                 const url = 'api/tasks/' + taskId;
@@ -58,11 +105,25 @@
                     .then(() => this.fetchTasks());
             },
 
-
-
             removeTask(taskId) {
                 const url = 'api/tasks/' + taskId;
                 axios.delete(url)
+                    .catch(error => alert(error))
+                    .then(() => this.fetchTasks());
+            },
+
+            // The task adder section is shown and the task name field
+            // is focused.
+            showAdderSection() {
+                this.isAddingTask = true;
+                this.$nextTick(() => {
+                    this.$refs.taskAdderComp.$refs.newNameInput.focus();
+                });
+            },
+
+            addTask(data) {
+                const url = 'api/tasks';
+                axios.post(url, data)
                     .catch(error => alert(error))
                     .then(() => this.fetchTasks());
             }
