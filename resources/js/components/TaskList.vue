@@ -130,6 +130,8 @@
                 const url = 'api/tasks';
                 axios.post(url, data)
                     .catch(error => alert(error));
+
+                this.isAddingTask = false;
             }
 
         }
