@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Events\TaskUpdated;
 
 class TaskController extends Controller
 {
@@ -17,7 +18,7 @@ class TaskController extends Controller
     {
         // Tasks with due times come first, ordered by their due times.
         // 'Done' tasks are last.
-        return Task::orderByRaw('is_done, due_time is null, due_time')
+        return Task::orderByRaw('is_done, due_time is null, due_time, created_at desc')
             ->select(
                 'id',
                 'name',
@@ -57,6 +58,9 @@ class TaskController extends Controller
             $task->due_time = $validatedData['dueTime'];
         }
         $task->save();
+
+        // A message is broadcast to Echo listening to a public channel.
+        broadcast( new TaskUpdated() );
     }
 
     /**
@@ -117,6 +121,9 @@ class TaskController extends Controller
         }
 
         $task->save();
+
+        // A message is broadcast to Echo listening to a public channel.
+        broadcast( new TaskUpdated() );
     }
 
     /**
@@ -128,5 +135,8 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         $task->delete();
+
+        // A message is broadcast to Echo listening to a public channel.
+        broadcast( new TaskUpdated() );
     }
 }
