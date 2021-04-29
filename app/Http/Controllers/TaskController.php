@@ -16,8 +16,14 @@ class TaskController extends Controller
     public function index()
     {
         // Tasks with due times come first, ordered by their due times.
-        return Task::orderByRaw('due_time is null, due_time')
-            ->select('id', 'name', 'due_time as dueTimeUtc')
+        // 'Done' tasks are last.
+        return Task::orderByRaw('is_done, due_time is null, due_time')
+            ->select(
+                'id',
+                'name',
+                'due_time as dueTimeUtc',
+                'is_done as isDone'
+            )
             ->limit(20)
             ->get();
     }

@@ -4,8 +4,18 @@
 
         <div v-show="!isEditing">
 
-            {{ task.name }}
-            {{ task.dueTimeUtc && leftTime }}
+            <input type="checkbox" v-model="isDone"
+                @change="toggleStatus"
+            >
+
+            <s v-if="task.isDone">
+                {{ task.name }}
+                {{ task.dueTimeUtc && leftTime }}
+            </s>
+            <template v-else>
+                {{ task.name }}
+                {{ task.dueTimeUtc && leftTime }}
+            </template>
 
             <button v-show="!isEditing"
                 @click="showEditSection"
@@ -36,6 +46,18 @@
 
 
 
+<style scoped>
+
+    li {
+        list-style: none;
+    }
+
+</style>
+
+
+
+
+
 <script>
 
     import TaskEditor from './TaskEditor.vue';
@@ -60,7 +82,9 @@
             return {
 
                 // Used to show/hide the section for editing a task.
-                isEditing: false
+                isEditing: false,
+
+                isDone: this.task.isDone
 
             }
         },
@@ -118,6 +142,15 @@
                     dueTime: null
                 });
                 this.isEditing = false;
+            },
+
+            // A task's status (done or not) is toggled.
+            toggleStatus() {
+                const data = {
+                    id: this.task.id,
+                    isDone: this.isDone
+                };
+                this.$emit('task-update', data);
             }
 
         }
