@@ -10,6 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use DB;
+use Illuminate\Support\Facades\Log;
 
 class TaskUpdated implements ShouldBroadcast
 {
@@ -36,11 +37,6 @@ class TaskUpdated implements ShouldBroadcast
             ->get();
     }
 
-    public function broadcastWith()
-    {
-        return [ 'tasks' => $this->tasks ];
-    }
-
     /**
      * Get the channels the event should broadcast on.
      *
@@ -49,5 +45,11 @@ class TaskUpdated implements ShouldBroadcast
     public function broadcastOn()
     {
         return new Channel('tasks');
+    }
+
+
+    public function broadcastWith()
+    {
+        return [ 'tasks' => $this->tasks ];
     }
 }

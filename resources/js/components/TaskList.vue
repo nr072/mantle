@@ -84,8 +84,15 @@
             // tasks whenever it gets a message.
             window.Echo.channel('tasks')
                 .listen('TaskUpdated', (data) => {
+
                     this.tasks = data.tasks;
+
+                    // Notification is cleared (if any).
+                    this.$emit('notification', {});
+
                 });
+
+            // TODO: Show error if offline
 
         },
 
@@ -98,7 +105,7 @@
                             this.tasks = response.data;
                         }
                     })
-                    .catch(error => alert(error));
+                    .catch(error => this.showNotification('error', error.message));
             },
 
             // Since data is passed from task editor components, which
@@ -108,13 +115,13 @@
                 const taskId = data.id;
                 const url = 'api/tasks/' + taskId;
                 axios.put(url, data)
-                    .catch(error => alert(error));
+                    .catch(error => this.showNotification('error', error.message));
             },
 
             removeTask(taskId) {
                 const url = 'api/tasks/' + taskId;
                 axios.delete(url)
-                    .catch(error => alert(error));
+                    .catch(error => this.showNotification('error', error.message));
             },
 
             // The task adder section is shown and the task name field
@@ -129,9 +136,13 @@
             addTask(data) {
                 const url = 'api/tasks';
                 axios.post(url, data)
-                    .catch(error => alert(error));
+                    .catch(error => this.showNotification('error', error.message));
 
                 this.isAddingTask = false;
+            },
+
+            showNotification(type, content) {
+                this.$emit('notification', { type, content });
             }
 
         }

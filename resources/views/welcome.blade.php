@@ -13,7 +13,7 @@
 </head>
 
     <div id="app">
-        <task-list></task-list>
+        <app></app>
     </div>
 
 <body>
