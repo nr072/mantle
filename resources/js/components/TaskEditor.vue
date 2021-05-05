@@ -1,29 +1,58 @@
 <template>
     <div>
 
-        <input ref="newNameInput"
-            v-model.trim="newName" type="text"
-            @keyup.enter="updateTask"
-            required 
-        >
+        <div class="field">
+            <div class="control">
+                <input ref="newNameInput"
+                    type="text" v-model.trim="newName"
+                    class="input is-small"
+                    @keyup.enter="updateTask"
+                    required 
+                >
+            </div>
+        </div>
 
-        <input v-model="newDate" type="date"
-            :min="newDateMinValue"
-            :max="newDateMaxValue"
-        >
-        <input class="new-time-input"
-            v-model.trim="newTime" type="text"
-            @keyup.enter="updateTask"
-            placeholder="23:01"
-        >
+        <div class="field is-horizontal is-justify-content-space-between">
 
-        <button v-show="currentDueTime"
-            @click="resetInputs(); $emit('due-time-removal');"
-        >Remove time</button>
+            <div class="field has-addons mb-0">
 
-        <div>
-            <button @click="updateTask">Save</button>
-            <button @click="resetInputs(); $emit('edit-cancellation');">Cancel</button>
+                <div class="control">
+                    <input type="date" v-model="newDate"
+                        class="input is-small"
+                        :min="newDateMinValue"
+                        :max="newDateMaxValue"
+                    >
+                </div>
+                <div class="control">
+                    <input type="text" v-model.trim="newTime"
+                        class="input is-small new-time-input"
+                        @keyup.enter="updateTask"
+                        placeholder="23:01"
+                    >
+                </div>
+
+                <div class="control">
+                    <button v-show="currentDueTime"
+                        class="button is-small is-outlined is-danger"
+                        @click="resetInputs(); $emit('due-time-removal');"
+                    >Remove time</button>
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <div class="buttons is-right">
+                    <button class="button is-small is-success"
+                        @click="updateTask"
+                    >Save</button>
+                    <button class="button is-small is-danger"
+                        @click="resetInputs(); $emit('edit-cancellation');"
+                    >Cancel</button>
+                </div>
+
+            </div>
+
         </div>
 
     </div>

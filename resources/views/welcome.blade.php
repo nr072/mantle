@@ -12,11 +12,11 @@
 
 </head>
 
+<body class="has-background-white-ter">
+
     <div id="app">
         <app></app>
     </div>
-
-<body>
     
     <script type="text/javascript" src="{{ mix('js/app.js') }}"></script>
 

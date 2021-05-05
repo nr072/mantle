@@ -1,29 +1,42 @@
 <template>
 
-    <li>
+    <li class="task px-5 py-2" :class="{ highlighted: isEditing }">
 
-        <div v-show="!isEditing">
+        <div v-show="!isEditing" class="level mb-0">
 
-            <input type="checkbox" v-model="isDone"
-                @change="toggleStatus"
-            >
+            <div class="level-left">
 
-            <s v-if="task.isDone">
-                {{ task.name }}
-                {{ task.dueTimeUtc && leftTime }}
-            </s>
-            <template v-else>
-                {{ task.name }}
-                {{ task.dueTimeUtc && leftTime }}
-            </template>
+                <input type="checkbox" v-model="isDone"
+                    class="mr-2" 
+                    @change="toggleStatus"
+                >
 
-            <button v-show="!isEditing"
-                @click="showEditSection"
-            >Edit</button>
+                <div>
+                    <div class="task-name" :class="{ done: task.isDone }">{{ task.name }}</div>
+                    <div v-if="task.dueTimeUtc"
+                        class="task-lefttime" :class="{ done: task.isDone }"
+                    >{{ leftTime }}</div>
+                </div>
 
-            <button v-show="!isEditing"
-                @click="$emit('task-removal', task.id);"
-            >Remove</button>
+            </div>
+
+            <div class="level-right">
+
+                <div class="buttons">
+
+                    <button v-show="!isEditing"
+                        class="button is-small is-info is-light"
+                        @click="showEditSection"
+                    >Edit</button>
+
+                    <button v-show="!isEditing"
+                        class="button is-small is-danger is-light"
+                        @click="$emit('task-removal', task.id);"
+                    >Remove</button>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -48,8 +61,23 @@
 
 <style scoped>
 
-    li {
+    .task {
         list-style: none;
+        padding-top: 0.75rem;
+        margin-left: -1.5rem;
+        margin-right: -1.5rem;
+    }
+    .task.highlighted {
+        background: beige;
+    }
+
+    .task > .level {
+        margin-bottom: 0.75rem;
+    }
+
+    .task-name.done,
+    .task-lefttime.done {
+        text-decoration: line-through;
     }
 
 </style>

@@ -1,10 +1,17 @@
 <template>
-    <section v-show="content">
+    <div v-show="content" class="columns">
+        <div class="column is-half is-offset-half">
 
-        <span v-show="type">{{ type }}:</span> {{ content }}
-        <button @click="$emit('close')">&times;</button>
+            <div class="notification" :class="classObject">
 
-    </section>
+                <button class="delete" @click="$emit('close')"></button>
+
+                <p>{{ content }}</p>
+
+            </div>
+
+        </div>
+    </div>
 </template>
 
 
@@ -19,6 +26,16 @@
 
             type: String,
             content: String
+
+        },
+
+        computed: {
+
+            classObject() {
+                return {
+                    'is-danger': this.type === 'error'
+                };
+            }
 
         }
 

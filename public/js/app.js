@@ -1847,6 +1847,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _NotificationArea_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./NotificationArea.vue */ "./resources/js/components/NotificationArea.vue");
 /* harmony import */ var _TaskList_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TaskList.vue */ "./resources/js/components/TaskList.vue");
+/* harmony import */ var _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./TaskEditor.vue */ "./resources/js/components/TaskEditor.vue");
 //
 //
 //
@@ -1867,20 +1868,102 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   components: {
     NotificationArea: _NotificationArea_vue__WEBPACK_IMPORTED_MODULE_0__.default,
-    TaskList: _TaskList_vue__WEBPACK_IMPORTED_MODULE_1__.default
+    TaskList: _TaskList_vue__WEBPACK_IMPORTED_MODULE_1__.default,
+    TaskAdder: _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_2__.default // Used as both an editor and an adder
+
   },
   data: function data() {
     return {
       notification: {
         type: '',
         content: ''
-      }
+      },
+      // Used to show/hide the task adder section.
+      isAddingTask: false,
+      // Today's date is used to set both a minimum value and
+      // a maximum value for setting a due time. This value is
+      // not reactive. It is used simply for computed values
+      // that are passed to all task editor components.
+      now: new Date()
     };
+  },
+  computed: {
+    // Today's date and a date from 1 year ahead are used to set
+    // the minimum and the maximum values for setting due time.
+    // Since these values are unlikely to change much in a single
+    // session (before the user closes the browser tab), these
+    // are passed to all task editor components.
+    newDateMinValue: function newDateMinValue() {
+      return this.now.toISOString().split('T')[0];
+    },
+    newDateMaxValue: function newDateMaxValue() {
+      var nowPlus1Year = new Date(this.now.getTime() + 31536000000);
+      return nowPlus1Year.toISOString().split('T')[0];
+    }
+  },
+  methods: {
+    // The task adder section is shown and the task name field
+    // is focused.
+    showAdderSection: function showAdderSection() {
+      var _this = this;
+
+      this.isAddingTask = true;
+      this.$nextTick(function () {
+        _this.$refs.taskAdderComp.$refs.newNameInput.focus();
+      });
+    },
+    addTask: function addTask(data) {
+      var _this2 = this;
+
+      var url = 'api/tasks';
+      axios.post(url, data)["catch"](function (error) {
+        return _this2.showNotification('error', error.message);
+      });
+      this.isAddingTask = false;
+    }
   }
 });
 
@@ -1910,10 +1993,24 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: {
     type: String,
     content: String
+  },
+  computed: {
+    classObject: function classObject() {
+      return {
+        'is-danger': this.type === 'error'
+      };
+    }
   }
 });
 
@@ -1931,6 +2028,34 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./TaskEditor.vue */ "./resources/js/components/TaskEditor.vue");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2138,6 +2263,35 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: {
     // When this component is used as a task editor, existing
@@ -2271,7 +2425,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var _Task_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Task.vue */ "./resources/js/components/Task.vue");
-/* harmony import */ var _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TaskEditor.vue */ "./resources/js/components/TaskEditor.vue");
 //
 //
 //
@@ -2290,53 +2443,21 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  props: {
+    newDateMinValue: String,
+    newDateMaxValue: String
+  },
   components: {
-    Task: _Task_vue__WEBPACK_IMPORTED_MODULE_0__.default,
-    TaskAdder: _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_1__.default // Used as both an editor and an adder
-
+    Task: _Task_vue__WEBPACK_IMPORTED_MODULE_0__.default
   },
   data: function data() {
     return {
-      tasks: [],
-      // Used to show/hide the section for adding a new task.
-      isAddingTask: false,
-      // Today's date is used to set both a minimum value and
-      // a maximum value for setting a due time.
-      now: new Date()
+      tasks: []
     };
   },
-  computed: {
-    // Today's date and a date from 1 year ahead are used to set
-    // the minimum and the maximum values for setting due time.
-    // Since these values are unlikely to change much in a single
-    // session (before the user closes the browser tab), these 2
-    // are passed to all task editor components.
-    newDateMinValue: function newDateMinValue() {
-      return this.now.toISOString().split('T')[0];
-    },
-    newDateMaxValue: function newDateMaxValue() {
-      var nowPlus1Year = new Date(this.now.getTime() + 31536000000);
-      return nowPlus1Year.toISOString().split('T')[0];
-    }
-  },
-  mounted: function mounted() {
+  created: function created() {
     var _this = this;
 
     this.fetchTasks(); // Echo listens for a broadcast message and fetches updated
@@ -2379,25 +2500,6 @@ __webpack_require__.r(__webpack_exports__);
       axios["delete"](url)["catch"](function (error) {
         return _this4.showNotification('error', error.message);
       });
-    },
-    // The task adder section is shown and the task name field
-    // is focused.
-    showAdderSection: function showAdderSection() {
-      var _this5 = this;
-
-      this.isAddingTask = true;
-      this.$nextTick(function () {
-        _this5.$refs.taskAdderComp.$refs.newNameInput.focus();
-      });
-    },
-    addTask: function addTask(data) {
-      var _this6 = this;
-
-      var url = 'api/tasks';
-      axios.post(url, data)["catch"](function (error) {
-        return _this6.showNotification('error', error.message);
-      });
-      this.isAddingTask = false;
     },
     showNotification: function showNotification(type, content) {
       this.$emit('notification', {
@@ -2492,7 +2594,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\nli[data-v-e9a53c20] {\n    list-style: none;\n}\n\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.task[data-v-e9a53c20] {\n    list-style: none;\n    padding-top: 0.75rem;\n    margin-left: -1.5rem;\n    margin-right: -1.5rem;\n}\n.task.highlighted[data-v-e9a53c20] {\n    background: beige;\n}\n.task > .level[data-v-e9a53c20] {\n    margin-bottom: 0.75rem;\n}\n.task-name.done[data-v-e9a53c20],\n.task-lefttime.done[data-v-e9a53c20] {\n    text-decoration: line-through;\n}\n\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -26882,7 +26984,8 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c(
-    "div",
+    "section",
+    { staticClass: "section pt-5" },
     [
       _c("notification-area", {
         attrs: {
@@ -26896,18 +26999,93 @@ var render = function() {
         }
       }),
       _vm._v(" "),
-      _c("task-list", {
-        on: {
-          notification: function($event) {
-            _vm.notification = $event
-          }
-        }
-      })
+      _c("div", { staticClass: "columns" }, [
+        _c("div", { staticClass: "column is-half" }, [
+          _c("div", { staticClass: "card has-background-white-bis" }, [
+            _vm._m(0),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "card-content" },
+              [
+                _c("task-list", {
+                  attrs: {
+                    newDateMinValue: _vm.newDateMinValue,
+                    newDateMaxValue: _vm.newDateMaxValue
+                  },
+                  on: {
+                    notification: function($event) {
+                      _vm.notification = $event
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "mt-5" },
+                  [
+                    _c(
+                      "button",
+                      {
+                        directives: [
+                          {
+                            name: "show",
+                            rawName: "v-show",
+                            value: !_vm.isAddingTask,
+                            expression: "!isAddingTask"
+                          }
+                        ],
+                        staticClass:
+                          "button is-small is-fullwidth is-info is-outlined",
+                        on: { click: _vm.showAdderSection }
+                      },
+                      [_vm._v("Add task")]
+                    ),
+                    _vm._v(" "),
+                    _c("task-adder", {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value: _vm.isAddingTask,
+                          expression: "isAddingTask"
+                        }
+                      ],
+                      ref: "taskAdderComp",
+                      attrs: {
+                        newDateMinValue: _vm.newDateMinValue,
+                        newDateMaxValue: _vm.newDateMaxValue
+                      },
+                      on: {
+                        "task-update": _vm.addTask,
+                        "edit-cancellation": function($event) {
+                          _vm.isAddingTask = false
+                        }
+                      }
+                    })
+                  ],
+                  1
+                )
+              ],
+              1
+            )
+          ])
+        ])
+      ])
     ],
     1
   )
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("header", { staticClass: "card-header" }, [
+      _c("p", { staticClass: "card-header-title" }, [_vm._v("[list name]")])
+    ])
+  }
+]
 render._withStripped = true
 
 
@@ -26931,7 +27109,7 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c(
-    "section",
+    "div",
     {
       directives: [
         {
@@ -26940,35 +27118,24 @@ var render = function() {
           value: _vm.content,
           expression: "content"
         }
-      ]
+      ],
+      staticClass: "columns"
     },
     [
-      _c(
-        "span",
-        {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.type,
-              expression: "type"
+      _c("div", { staticClass: "column is-half is-offset-half" }, [
+        _c("div", { staticClass: "notification", class: _vm.classObject }, [
+          _c("button", {
+            staticClass: "delete",
+            on: {
+              click: function($event) {
+                return _vm.$emit("close")
+              }
             }
-          ]
-        },
-        [_vm._v(_vm._s(_vm.type) + ":")]
-      ),
-      _vm._v(" " + _vm._s(_vm.content) + "\n    "),
-      _c(
-        "button",
-        {
-          on: {
-            click: function($event) {
-              return _vm.$emit("close")
-            }
-          }
-        },
-        [_vm._v("×")]
-      )
+          }),
+          _vm._v(" "),
+          _c("p", [_vm._v(_vm._s(_vm.content))])
+        ])
+      ])
     ]
   )
 }
@@ -26997,6 +27164,7 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "li",
+    { staticClass: "task px-5 py-2", class: { highlighted: _vm.isEditing } },
     [
       _c(
         "div",
@@ -27008,107 +27176,115 @@ var render = function() {
               value: !_vm.isEditing,
               expression: "!isEditing"
             }
-          ]
+          ],
+          staticClass: "level mb-0"
         },
         [
-          _c("input", {
-            directives: [
-              {
-                name: "model",
-                rawName: "v-model",
-                value: _vm.isDone,
-                expression: "isDone"
-              }
-            ],
-            attrs: { type: "checkbox" },
-            domProps: {
-              checked: Array.isArray(_vm.isDone)
-                ? _vm._i(_vm.isDone, null) > -1
-                : _vm.isDone
-            },
-            on: {
-              change: [
-                function($event) {
-                  var $$a = _vm.isDone,
-                    $$el = $event.target,
-                    $$c = $$el.checked ? true : false
-                  if (Array.isArray($$a)) {
-                    var $$v = null,
-                      $$i = _vm._i($$a, $$v)
-                    if ($$el.checked) {
-                      $$i < 0 && (_vm.isDone = $$a.concat([$$v]))
+          _c("div", { staticClass: "level-left" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.isDone,
+                  expression: "isDone"
+                }
+              ],
+              staticClass: "mr-2",
+              attrs: { type: "checkbox" },
+              domProps: {
+                checked: Array.isArray(_vm.isDone)
+                  ? _vm._i(_vm.isDone, null) > -1
+                  : _vm.isDone
+              },
+              on: {
+                change: [
+                  function($event) {
+                    var $$a = _vm.isDone,
+                      $$el = $event.target,
+                      $$c = $$el.checked ? true : false
+                    if (Array.isArray($$a)) {
+                      var $$v = null,
+                        $$i = _vm._i($$a, $$v)
+                      if ($$el.checked) {
+                        $$i < 0 && (_vm.isDone = $$a.concat([$$v]))
+                      } else {
+                        $$i > -1 &&
+                          (_vm.isDone = $$a
+                            .slice(0, $$i)
+                            .concat($$a.slice($$i + 1)))
+                      }
                     } else {
-                      $$i > -1 &&
-                        (_vm.isDone = $$a
-                          .slice(0, $$i)
-                          .concat($$a.slice($$i + 1)))
+                      _vm.isDone = $$c
                     }
-                  } else {
-                    _vm.isDone = $$c
+                  },
+                  _vm.toggleStatus
+                ]
+              }
+            }),
+            _vm._v(" "),
+            _c("div", [
+              _c(
+                "div",
+                { staticClass: "task-name", class: { done: _vm.task.isDone } },
+                [_vm._v(_vm._s(_vm.task.name))]
+              ),
+              _vm._v(" "),
+              _vm.task.dueTimeUtc
+                ? _c(
+                    "div",
+                    {
+                      staticClass: "task-lefttime",
+                      class: { done: _vm.task.isDone }
+                    },
+                    [_vm._v(_vm._s(_vm.leftTime))]
+                  )
+                : _vm._e()
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "level-right" }, [
+            _c("div", { staticClass: "buttons" }, [
+              _c(
+                "button",
+                {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: !_vm.isEditing,
+                      expression: "!isEditing"
+                    }
+                  ],
+                  staticClass: "button is-small is-info is-light",
+                  on: { click: _vm.showEditSection }
+                },
+                [_vm._v("Edit")]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: !_vm.isEditing,
+                      expression: "!isEditing"
+                    }
+                  ],
+                  staticClass: "button is-small is-danger is-light",
+                  on: {
+                    click: function($event) {
+                      return _vm.$emit("task-removal", _vm.task.id)
+                    }
                   }
                 },
-                _vm.toggleStatus
-              ]
-            }
-          }),
-          _vm._v(" "),
-          _vm.task.isDone
-            ? _c("s", [
-                _vm._v(
-                  "\n            " +
-                    _vm._s(_vm.task.name) +
-                    "\n            " +
-                    _vm._s(_vm.task.dueTimeUtc && _vm.leftTime) +
-                    "\n        "
-                )
-              ])
-            : [
-                _vm._v(
-                  "\n            " +
-                    _vm._s(_vm.task.name) +
-                    "\n            " +
-                    _vm._s(_vm.task.dueTimeUtc && _vm.leftTime) +
-                    "\n        "
-                )
-              ],
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: !_vm.isEditing,
-                  expression: "!isEditing"
-                }
-              ],
-              on: { click: _vm.showEditSection }
-            },
-            [_vm._v("Edit")]
-          ),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: !_vm.isEditing,
-                  expression: "!isEditing"
-                }
-              ],
-              on: {
-                click: function($event) {
-                  return _vm.$emit("task-removal", _vm.task.id)
-                }
-              }
-            },
-            [_vm._v("Remove")]
-          )
-        ],
-        2
+                [_vm._v("Remove")]
+              )
+            ])
+          ])
+        ]
       ),
       _vm._v(" "),
       _c("task-editor", {
@@ -27163,138 +27339,169 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("input", {
-      directives: [
-        {
-          name: "model",
-          rawName: "v-model.trim",
-          value: _vm.newName,
-          expression: "newName",
-          modifiers: { trim: true }
-        }
-      ],
-      ref: "newNameInput",
-      attrs: { type: "text", required: "" },
-      domProps: { value: _vm.newName },
-      on: {
-        keyup: function($event) {
-          if (
-            !$event.type.indexOf("key") &&
-            _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
-          ) {
-            return null
-          }
-          return _vm.updateTask($event)
-        },
-        input: function($event) {
-          if ($event.target.composing) {
-            return
-          }
-          _vm.newName = $event.target.value.trim()
-        },
-        blur: function($event) {
-          return _vm.$forceUpdate()
-        }
-      }
-    }),
-    _vm._v(" "),
-    _c("input", {
-      directives: [
-        {
-          name: "model",
-          rawName: "v-model",
-          value: _vm.newDate,
-          expression: "newDate"
-        }
-      ],
-      attrs: {
-        type: "date",
-        min: _vm.newDateMinValue,
-        max: _vm.newDateMaxValue
-      },
-      domProps: { value: _vm.newDate },
-      on: {
-        input: function($event) {
-          if ($event.target.composing) {
-            return
-          }
-          _vm.newDate = $event.target.value
-        }
-      }
-    }),
-    _vm._v(" "),
-    _c("input", {
-      directives: [
-        {
-          name: "model",
-          rawName: "v-model.trim",
-          value: _vm.newTime,
-          expression: "newTime",
-          modifiers: { trim: true }
-        }
-      ],
-      staticClass: "new-time-input",
-      attrs: { type: "text", placeholder: "23:01" },
-      domProps: { value: _vm.newTime },
-      on: {
-        keyup: function($event) {
-          if (
-            !$event.type.indexOf("key") &&
-            _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
-          ) {
-            return null
-          }
-          return _vm.updateTask($event)
-        },
-        input: function($event) {
-          if ($event.target.composing) {
-            return
-          }
-          _vm.newTime = $event.target.value.trim()
-        },
-        blur: function($event) {
-          return _vm.$forceUpdate()
-        }
-      }
-    }),
-    _vm._v(" "),
-    _c(
-      "button",
-      {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: _vm.currentDueTime,
-            expression: "currentDueTime"
-          }
-        ],
-        on: {
-          click: function($event) {
-            _vm.resetInputs()
-            _vm.$emit("due-time-removal")
-          }
-        }
-      },
-      [_vm._v("Remove time")]
-    ),
-    _vm._v(" "),
-    _c("div", [
-      _c("button", { on: { click: _vm.updateTask } }, [_vm._v("Save")]),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
+    _c("div", { staticClass: "field" }, [
+      _c("div", { staticClass: "control" }, [
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model.trim",
+              value: _vm.newName,
+              expression: "newName",
+              modifiers: { trim: true }
+            }
+          ],
+          ref: "newNameInput",
+          staticClass: "input is-small",
+          attrs: { type: "text", required: "" },
+          domProps: { value: _vm.newName },
           on: {
-            click: function($event) {
-              _vm.resetInputs()
-              _vm.$emit("edit-cancellation")
+            keyup: function($event) {
+              if (
+                !$event.type.indexOf("key") &&
+                _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+              ) {
+                return null
+              }
+              return _vm.updateTask($event)
+            },
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.newName = $event.target.value.trim()
+            },
+            blur: function($event) {
+              return _vm.$forceUpdate()
             }
           }
-        },
-        [_vm._v("Cancel")]
-      )
-    ])
+        })
+      ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "field is-horizontal is-justify-content-space-between" },
+      [
+        _c("div", { staticClass: "field has-addons mb-0" }, [
+          _c("div", { staticClass: "control" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.newDate,
+                  expression: "newDate"
+                }
+              ],
+              staticClass: "input is-small",
+              attrs: {
+                type: "date",
+                min: _vm.newDateMinValue,
+                max: _vm.newDateMaxValue
+              },
+              domProps: { value: _vm.newDate },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.newDate = $event.target.value
+                }
+              }
+            })
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "control" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model.trim",
+                  value: _vm.newTime,
+                  expression: "newTime",
+                  modifiers: { trim: true }
+                }
+              ],
+              staticClass: "input is-small new-time-input",
+              attrs: { type: "text", placeholder: "23:01" },
+              domProps: { value: _vm.newTime },
+              on: {
+                keyup: function($event) {
+                  if (
+                    !$event.type.indexOf("key") &&
+                    _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                  ) {
+                    return null
+                  }
+                  return _vm.updateTask($event)
+                },
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.newTime = $event.target.value.trim()
+                },
+                blur: function($event) {
+                  return _vm.$forceUpdate()
+                }
+              }
+            })
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "control" }, [
+            _c(
+              "button",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.currentDueTime,
+                    expression: "currentDueTime"
+                  }
+                ],
+                staticClass: "button is-small is-outlined is-danger",
+                on: {
+                  click: function($event) {
+                    _vm.resetInputs()
+                    _vm.$emit("due-time-removal")
+                  }
+                }
+              },
+              [_vm._v("Remove time")]
+            )
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "field" }, [
+          _c("div", { staticClass: "buttons is-right" }, [
+            _c(
+              "button",
+              {
+                staticClass: "button is-small is-success",
+                on: { click: _vm.updateTask }
+              },
+              [_vm._v("Save")]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "button is-small is-danger",
+                on: {
+                  click: function($event) {
+                    _vm.resetInputs()
+                    _vm.$emit("edit-cancellation")
+                  }
+                }
+              },
+              [_vm._v("Cancel")]
+            )
+          ])
+        ])
+      ]
+    )
   ])
 }
 var staticRenderFns = []
@@ -27321,65 +27528,18 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c(
-    "div",
-    [
-      _c(
-        "ul",
-        _vm._l(_vm.tasks, function(task) {
-          return _c("task", {
-            key: task.id,
-            attrs: {
-              task: task,
-              newDateMinValue: _vm.newDateMinValue,
-              newDateMaxValue: _vm.newDateMaxValue
-            },
-            on: {
-              "task-update": _vm.updateTask,
-              "task-removal": _vm.removeTask
-            }
-          })
-        }),
-        1
-      ),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: !_vm.isAddingTask,
-              expression: "!isAddingTask"
-            }
-          ],
-          on: { click: _vm.showAdderSection }
-        },
-        [_vm._v("Add task")]
-      ),
-      _vm._v(" "),
-      _c("task-adder", {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: _vm.isAddingTask,
-            expression: "isAddingTask"
-          }
-        ],
-        ref: "taskAdderComp",
+    "ul",
+    _vm._l(_vm.tasks, function(task) {
+      return _c("task", {
+        key: task.id,
         attrs: {
+          task: task,
           newDateMinValue: _vm.newDateMinValue,
           newDateMaxValue: _vm.newDateMaxValue
         },
-        on: {
-          "task-update": _vm.addTask,
-          "edit-cancellation": function($event) {
-            _vm.isAddingTask = false
-          }
-        }
+        on: { "task-update": _vm.updateTask, "task-removal": _vm.removeTask }
       })
-    ],
+    }),
     1
   )
 }
