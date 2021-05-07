@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Task;
+use App\Models\Note;
 
-class TaskSeeder extends Seeder
+class NoteSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,8 +14,8 @@ class TaskSeeder extends Seeder
      */
     public function run()
     {
-        Task::factory()
-            ->times(8)
+        Note::factory()
+            ->times(17)
             ->create();
     }
 }
