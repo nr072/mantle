@@ -40,8 +40,7 @@
 
         </div>
 
-        <task-editor v-show="isEditing"
-            ref="taskEditorComp"
+        <task-editor v-show="isEditing" ref="taskEditorComp"
             :currentName="task.name"
             :currentDueTime="dueTime"
             :newDateMinValue="newDateMinValue"

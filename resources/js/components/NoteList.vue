@@ -5,7 +5,7 @@
     <ul v-else-if="notes.length">
 
         <li v-for="note of notes">
-            <button class="button"
+            <button class="button is-small is-dark is-inverted mb-2"
                 @click="$emit('note-opened', note.id)"
             >#{{ note.id }} {{ note.name }}</button>
         </li>

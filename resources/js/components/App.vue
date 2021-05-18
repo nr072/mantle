@@ -9,11 +9,11 @@
 
         <div class="columns">
 
-            <div class="column is-half">
+            <div class="column is-three-fifths">
                 <div class="card has-background-white-bis">
 
                     <header class="card-header">
-                        <p class="card-header-title">[list name]</p>
+                        <p class="card-header-title">{{ openNoteName || 'Tasks' }}</p>
                     </header>
 
                     <div class="card-content">
@@ -32,8 +32,7 @@
                                 @click="showAdderSection"
                             >Add task</button>
 
-                            <task-adder v-show="isAddingTask"
-                                ref="taskAdderComp"
+                            <task-adder v-show="isAddingTask" ref="taskAdderComp"
                                 :newDateMinValue="newDateMinValue"
                                 :newDateMaxValue="newDateMaxValue"
                                 :noteNames="noteNamesForDropdown"
@@ -51,11 +50,11 @@
                 </div>
             </div>
 
-            <div class="column is-half">
+            <div class="column is-two-fifths">
                 <div class="card has-background-white-bis">
 
                     <header class="card-header">
-                        <p class="card-header-title">notes</p>
+                        <p class="card-header-title">Notes</p>
                     </header>
 
                     <div class="card-content">
@@ -154,6 +153,18 @@
             noteNamesForDropdown() {
                 if (this.clickedNoteId === 0) {
                     return this.notes;
+                }
+            },
+
+            // If a note is open, its name is shown in the task card header.
+            openNoteName() {
+                if (this.clickedNoteId !== 0 && this.notes && this.notes.length) {
+                    for (let i = 0; i < this.notes.length; ++i) {
+                        const note = this.notes[i];
+                        if (note.id === this.clickedNoteId) {
+                            return note.name;
+                        }
+                    }
                 }
             }
 

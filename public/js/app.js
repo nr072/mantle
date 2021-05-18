@@ -1930,7 +1930,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 
 
 
@@ -1990,6 +1989,18 @@ __webpack_require__.r(__webpack_exports__);
     noteNamesForDropdown: function noteNamesForDropdown() {
       if (this.clickedNoteId === 0) {
         return this.notes;
+      }
+    },
+    // If a note is open, its name is shown in the task card header.
+    openNoteName: function openNoteName() {
+      if (this.clickedNoteId !== 0 && this.notes && this.notes.length) {
+        for (var i = 0; i < this.notes.length; ++i) {
+          var note = this.notes[i];
+
+          if (note.id === this.clickedNoteId) {
+            return note.name;
+          }
+        }
       }
     }
   },
@@ -2157,7 +2168,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./TaskEditor.vue */ "./resources/js/components/TaskEditor.vue");
-//
 //
 //
 //
@@ -27292,9 +27302,13 @@ var render = function() {
       }),
       _vm._v(" "),
       _c("div", { staticClass: "columns" }, [
-        _c("div", { staticClass: "column is-half" }, [
+        _c("div", { staticClass: "column is-three-fifths" }, [
           _c("div", { staticClass: "card has-background-white-bis" }, [
-            _vm._m(0),
+            _c("header", { staticClass: "card-header" }, [
+              _c("p", { staticClass: "card-header-title" }, [
+                _vm._v(_vm._s(_vm.openNoteName || "Tasks"))
+              ])
+            ]),
             _vm._v(" "),
             _c(
               "div",
@@ -27371,9 +27385,9 @@ var render = function() {
           ])
         ]),
         _vm._v(" "),
-        _c("div", { staticClass: "column is-half" }, [
+        _c("div", { staticClass: "column is-two-fifths" }, [
           _c("div", { staticClass: "card has-background-white-bis" }, [
-            _vm._m(1),
+            _vm._m(0),
             _vm._v(" "),
             _c(
               "div",
@@ -27408,15 +27422,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("header", { staticClass: "card-header" }, [
-      _c("p", { staticClass: "card-header-title" }, [_vm._v("[list name]")])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("header", { staticClass: "card-header" }, [
-      _c("p", { staticClass: "card-header-title" }, [_vm._v("notes")])
+      _c("p", { staticClass: "card-header-title" }, [_vm._v("Notes")])
     ])
   }
 ]
@@ -27452,7 +27458,7 @@ var render = function() {
             _c(
               "button",
               {
-                staticClass: "button",
+                staticClass: "button is-small is-dark is-inverted mb-2",
                 on: {
                   click: function($event) {
                     return _vm.$emit("note-opened", note.id)
