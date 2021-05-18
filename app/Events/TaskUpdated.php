@@ -17,15 +17,19 @@ class TaskUpdated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $tasks;
+    public $noteId;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($noteId)
     {
+        $this->noteId = $noteId;
+
         $this->tasks = DB::table('tasks')
+            ->where('note_id', $noteId)
             ->orderByRaw('is_done, due_time is null, due_time, created_at desc')
             ->select(
                 'id',
@@ -44,7 +48,7 @@ class TaskUpdated implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('tasks');
+        return new Channel('note.' . $this->noteId);
     }
 
 

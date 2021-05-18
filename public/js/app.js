@@ -1848,6 +1848,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _NotificationArea_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./NotificationArea.vue */ "./resources/js/components/NotificationArea.vue");
 /* harmony import */ var _TaskList_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TaskList.vue */ "./resources/js/components/TaskList.vue");
 /* harmony import */ var _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./TaskEditor.vue */ "./resources/js/components/TaskEditor.vue");
+/* harmony import */ var _NoteList_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./NoteList.vue */ "./resources/js/components/NoteList.vue");
 //
 //
 //
@@ -1905,6 +1906,32 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 
 
 
@@ -1912,8 +1939,9 @@ __webpack_require__.r(__webpack_exports__);
   components: {
     NotificationArea: _NotificationArea_vue__WEBPACK_IMPORTED_MODULE_0__.default,
     TaskList: _TaskList_vue__WEBPACK_IMPORTED_MODULE_1__.default,
-    TaskAdder: _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_2__.default // Used as both an editor and an adder
-
+    TaskAdder: _TaskEditor_vue__WEBPACK_IMPORTED_MODULE_2__.default,
+    // Used as both an editor and an adder
+    NoteList: _NoteList_vue__WEBPACK_IMPORTED_MODULE_3__.default
   },
   data: function data() {
     return {
@@ -1927,7 +1955,18 @@ __webpack_require__.r(__webpack_exports__);
       // a maximum value for setting a due time. This value is
       // not reactive. It is used simply for computed values
       // that are passed to all task editor components.
-      now: new Date()
+      now: new Date(),
+      // The ID of the note on the note card the user clicked.
+      // On fresh load, it is the default value which is just
+      // a placeholder. This ID is used to:
+      //   - show the clicked note's tasks on the task card,
+      //   - pre-select the note name when the user tries to add
+      //     a new task to an existing note.
+      clickedNoteId: 0,
+      // Available note names are shown in a dropdown inside the
+      // task adder for adding new tasks. This array is passed
+      // to the task adder.
+      notes: []
     };
   },
   computed: {
@@ -1942,6 +1981,16 @@ __webpack_require__.r(__webpack_exports__);
     newDateMaxValue: function newDateMaxValue() {
       var nowPlus1Year = new Date(this.now.getTime() + 31536000000);
       return nowPlus1Year.toISOString().split('T')[0];
+    },
+    // If no note is open (i.e., no note on the note card has been
+    // clicked on), available note names and IDs are passed to the
+    // task adder so that a dropdown of task names can be shown on
+    // the task card for adding new tasks.
+    // TODO: Change this if structure of "notes" changes
+    noteNamesForDropdown: function noteNamesForDropdown() {
+      if (this.clickedNoteId === 0) {
+        return this.notes;
+      }
     }
   },
   methods: {
@@ -1960,9 +2009,89 @@ __webpack_require__.r(__webpack_exports__);
 
       var url = 'api/tasks';
       axios.post(url, data)["catch"](function (error) {
-        return _this2.showNotification('error', error.message);
+        return _this2.notification = {
+          type: 'error',
+          content: error.message
+        };
       });
       this.isAddingTask = false;
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/NoteList.vue?vue&type=script&lang=js&":
+/*!***************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/NoteList.vue?vue&type=script&lang=js& ***!
+  \***************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  data: function data() {
+    return {
+      notes: [],
+      // A "loading" message may need to be shown in some cases
+      // (e.g., fetching data).
+      isLoading: false
+    };
+  },
+  created: function created() {
+    var _this = this;
+
+    // Notes are fetched on load and fetched data is passed up
+    // so that available note names can be shown in a dropdown
+    // on the task card for creating new tasks.
+    this.isLoading = true;
+    this.fetchNotes(function () {
+      _this.$emit('notes-fetched', _this.notes);
+    });
+  },
+  methods: {
+    fetchNotes: function fetchNotes(callback) {
+      var _this2 = this;
+
+      axios.get('/api/notes').then(function (response) {
+        if (response.status === 200) {
+          _this2.notes = response.data;
+        }
+      }).then(function () {
+        callback && callback();
+      })["catch"](function (error) {
+        return _this2.$emit('notification', {
+          type: 'error',
+          content: error.message
+        });
+      }).then(function () {
+        return _this2.isLoading = false;
+      });
     }
   }
 });
@@ -2292,14 +2421,38 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: {
+    // This component can be used as both a task editor and the
+    // task adder.
+    isTaskAdder: Boolean,
     // When this component is used as a task editor, existing
     // task name - and, optionally, due time - will be passed.
     currentName: String,
     currentDueTime: Date,
+    // Minimum and maximum values for editing or setting due times.
     newDateMinValue: String,
-    newDateMaxValue: String
+    newDateMaxValue: String,
+    // Available note names are shown in a dropdown for adding
+    // new tasks. This is passed only to the task adder.
+    noteNames: Array,
+    // If a note is already open, the task adder is passed the
+    // note's ID so that the ID can be used to add new tasks.
+    openNoteId: Number
   },
   data: function data() {
     return {
@@ -2308,7 +2461,11 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // New 'due time' input is made up of 2 parts: a date
       // input and a time input.
       newDate: '',
-      newTime: ''
+      newTime: '',
+      // If no note is open, a note name dropdown is shown in
+      // the task adder and the user can select a note from it
+      // to create new tasks.
+      selectedNoteId: 0
     };
   },
   computed: {
@@ -2346,8 +2503,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     this.resetInputs();
   },
   methods: {
-    // If there are new values, the new data is passed up to the
-    // parent component for update, and input values are reset.
+    // If there are new values, all the new data is passed up to
+    // the parent component for update, and input values are reset.
     updateTask: function updateTask() {
       // A task must have a name.
       if (!this.newName) {
@@ -2360,6 +2517,29 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
       if (this.currentName !== this.newName) {
         data.name = this.newName;
+      } // If this is the task adder, the note ID is added to
+      // the data.
+
+
+      if (this.isTaskAdder) {
+        // If a note is already open (i.e., a note on the note
+        // card has been clicked), its ID is used.
+        if (this.openNoteId !== 0) {
+          data.noteId = this.openNoteId;
+        } // If no note is open, a dropdown of available note
+        // names is showing and the selected note's ID is
+        // used.
+        else if (this.selectedNoteId > 0) {
+            data.noteId = this.selectedNoteId;
+          } // A new task can not be created without selecting
+          // an existing note.
+          else {
+              this.$emit('notification', {
+                type: 'error',
+                content: 'No note selected'
+              });
+              return;
+            }
       }
 
       var newDueTime = new Date(this.newDate + ' ' + this.newTime); // An update will occur only if there is a valid due time
@@ -2383,10 +2563,10 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
       this.resetInputs();
     },
-    // Name, date and time inputs are reset: If this is a task
-    // editor, the inputs are reset to their passed values; and
-    // if this is a task adder, the inputs are just cleared.
     resetInputs: function resetInputs() {
+      // If this is a task editor, the name, date, and time
+      // inputs are reset to their passed values. If this is
+      // the task adder, they are simply cleared.
       this.newName = this.currentName || '';
 
       if (this.currentDueTime) {
@@ -2395,7 +2575,11 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       } else {
         this.newDate = '';
         this.newTime = '';
-      }
+      } // The selected value of the task adder note name dropdown
+      // is reset.
+
+
+      this.selectedNoteId = 0;
     }
   },
   watch: {
@@ -2443,68 +2627,104 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: {
     newDateMinValue: String,
-    newDateMaxValue: String
+    newDateMaxValue: String,
+    // If the user has clicked on a note on the note card, its ID
+    // is used to show its tasks on the task card.
+    openNoteId: Number
   },
   components: {
     Task: _Task_vue__WEBPACK_IMPORTED_MODULE_0__.default
   },
   data: function data() {
     return {
-      tasks: []
+      tasks: [],
+      // A "loading" message may need to be shown in some cases
+      // (e.g., fetching data).
+      isLoading: false
     };
   },
-  created: function created() {
-    var _this = this;
-
-    this.fetchTasks(); // Echo listens for a broadcast message and fetches updated
-    // tasks whenever it gets a message.
-
-    window.Echo.channel('tasks').listen('TaskUpdated', function (data) {
-      _this.tasks = data.tasks; // Notification is cleared (if any).
-
-      _this.$emit('notification', {});
-    }); // TODO: Show error if offline
-  },
   methods: {
-    fetchTasks: function fetchTasks() {
-      var _this2 = this;
+    fetchTasks: function fetchTasks(noteId) {
+      var _this = this;
 
-      axios.get('api/tasks').then(function (response) {
+      var url = '/api/notes/' + noteId;
+      axios.get(url).then(function (response) {
         if (response.status === 200) {
-          _this2.tasks = response.data;
+          _this.tasks = response.data.tasks;
         }
       })["catch"](function (error) {
-        return _this2.showNotification('error', error.message);
+        return _this.$emit('notification', {
+          type: 'error',
+          content: error.message
+        });
+      }).then(function () {
+        return _this.isLoading = false;
       });
     },
     // Since data is passed from task editor components, which
     // do not have task IDs, the IDs are set here before hitting
     // the API.
     updateTask: function updateTask(data) {
-      var _this3 = this;
+      var _this2 = this;
 
       var taskId = data.id;
       var url = 'api/tasks/' + taskId;
       axios.put(url, data)["catch"](function (error) {
-        return _this3.showNotification('error', error.message);
+        return _this2.showNotification('error', error.message);
       });
     },
     removeTask: function removeTask(taskId) {
-      var _this4 = this;
+      var _this3 = this;
 
       var url = 'api/tasks/' + taskId;
       axios["delete"](url)["catch"](function (error) {
-        return _this4.showNotification('error', error.message);
+        return _this3.showNotification('error', error.message);
       });
     },
     showNotification: function showNotification(type, content) {
       this.$emit('notification', {
         type: type,
         content: content
+      });
+    }
+  },
+  watch: {
+    // Whenever a note is clicked on (i.e., "opened") on the note
+    // card, its tasks are fetched and shown on the task card. Echo
+    // stops listening to the channel for the previously opened note
+    // and starts listening for the currently-open note instead.
+    openNoteId: function openNoteId(newId, oldId) {
+      var _this4 = this;
+
+      // The default value of the ID is zero which is a placeholder.
+      if (this.openNoteId > 0) {
+        this.isLoading = true;
+        this.fetchTasks(this.openNoteId);
+      } // Stops listening to the old note's channel.
+
+
+      Echo.leave("note.".concat(oldId)); // Starts listening to the current note's channel.
+
+      Echo.channel("note.".concat(newId)).listen('TaskUpdated', function (data) {
+        _this4.tasks = data.tasks; // Notification is cleared (if any).
+
+        _this4.$emit('notification', {});
       });
     }
   }
@@ -26616,6 +26836,45 @@ component.options.__file = "resources/js/components/App.vue"
 
 /***/ }),
 
+/***/ "./resources/js/components/NoteList.vue":
+/*!**********************************************!*\
+  !*** ./resources/js/components/NoteList.vue ***!
+  \**********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _NoteList_vue_vue_type_template_id_7c04491b___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./NoteList.vue?vue&type=template&id=7c04491b& */ "./resources/js/components/NoteList.vue?vue&type=template&id=7c04491b&");
+/* harmony import */ var _NoteList_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./NoteList.vue?vue&type=script&lang=js& */ "./resources/js/components/NoteList.vue?vue&type=script&lang=js&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! !../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+;
+var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__.default)(
+  _NoteList_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__.default,
+  _NoteList_vue_vue_type_template_id_7c04491b___WEBPACK_IMPORTED_MODULE_0__.render,
+  _NoteList_vue_vue_type_template_id_7c04491b___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/NoteList.vue"
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (component.exports);
+
+/***/ }),
+
 /***/ "./resources/js/components/NotificationArea.vue":
 /*!******************************************************!*\
   !*** ./resources/js/components/NotificationArea.vue ***!
@@ -26792,6 +27051,22 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/NoteList.vue?vue&type=script&lang=js&":
+/*!***********************************************************************!*\
+  !*** ./resources/js/components/NoteList.vue?vue&type=script&lang=js& ***!
+  \***********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_0_rules_0_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_NoteList_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./NoteList.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/NoteList.vue?vue&type=script&lang=js&");
+ /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_0_rules_0_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_NoteList_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__.default); 
+
+/***/ }),
+
 /***/ "./resources/js/components/NotificationArea.vue?vue&type=script&lang=js&":
 /*!*******************************************************************************!*\
   !*** ./resources/js/components/NotificationArea.vue?vue&type=script&lang=js& ***!
@@ -26895,6 +27170,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_App_vue_vue_type_template_id_332fccf4___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
 /* harmony export */ });
 /* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_App_vue_vue_type_template_id_332fccf4___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./App.vue?vue&type=template&id=332fccf4& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/App.vue?vue&type=template&id=332fccf4&");
+
+
+/***/ }),
+
+/***/ "./resources/js/components/NoteList.vue?vue&type=template&id=7c04491b&":
+/*!*****************************************************************************!*\
+  !*** ./resources/js/components/NoteList.vue?vue&type=template&id=7c04491b& ***!
+  \*****************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_NoteList_vue_vue_type_template_id_7c04491b___WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_NoteList_vue_vue_type_template_id_7c04491b___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
+/* harmony export */ });
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_NoteList_vue_vue_type_template_id_7c04491b___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./NoteList.vue?vue&type=template&id=7c04491b& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/NoteList.vue?vue&type=template&id=7c04491b&");
 
 
 /***/ }),
@@ -27011,7 +27303,8 @@ var render = function() {
                 _c("task-list", {
                   attrs: {
                     newDateMinValue: _vm.newDateMinValue,
-                    newDateMaxValue: _vm.newDateMaxValue
+                    newDateMaxValue: _vm.newDateMaxValue,
+                    openNoteId: _vm.clickedNoteId
                   },
                   on: {
                     notification: function($event) {
@@ -27054,18 +27347,51 @@ var render = function() {
                       ref: "taskAdderComp",
                       attrs: {
                         newDateMinValue: _vm.newDateMinValue,
-                        newDateMaxValue: _vm.newDateMaxValue
+                        newDateMaxValue: _vm.newDateMaxValue,
+                        noteNames: _vm.noteNamesForDropdown,
+                        openNoteId: _vm.clickedNoteId,
+                        isTaskAdder: true
                       },
                       on: {
                         "task-update": _vm.addTask,
                         "edit-cancellation": function($event) {
                           _vm.isAddingTask = false
+                        },
+                        notification: function($event) {
+                          _vm.notification = $event
                         }
                       }
                     })
                   ],
                   1
                 )
+              ],
+              1
+            )
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "column is-half" }, [
+          _c("div", { staticClass: "card has-background-white-bis" }, [
+            _vm._m(1),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "card-content" },
+              [
+                _c("note-list", {
+                  on: {
+                    notification: function($event) {
+                      _vm.notification = $event
+                    },
+                    "note-opened": function($event) {
+                      _vm.clickedNoteId = $event
+                    },
+                    "notes-fetched": function($event) {
+                      _vm.notes = $event
+                    }
+                  }
+                })
               ],
               1
             )
@@ -27084,8 +27410,64 @@ var staticRenderFns = [
     return _c("header", { staticClass: "card-header" }, [
       _c("p", { staticClass: "card-header-title" }, [_vm._v("[list name]")])
     ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("header", { staticClass: "card-header" }, [
+      _c("p", { staticClass: "card-header-title" }, [_vm._v("notes")])
+    ])
   }
 ]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/NoteList.vue?vue&type=template&id=7c04491b&":
+/*!********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/NoteList.vue?vue&type=template&id=7c04491b& ***!
+  \********************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render),
+/* harmony export */   "staticRenderFns": () => (/* binding */ staticRenderFns)
+/* harmony export */ });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _vm.isLoading
+    ? _c("p", [_vm._v("Loading ...")])
+    : _vm.notes.length
+    ? _c(
+        "ul",
+        _vm._l(_vm.notes, function(note) {
+          return _c("li", [
+            _c(
+              "button",
+              {
+                staticClass: "button",
+                on: {
+                  click: function($event) {
+                    return _vm.$emit("note-opened", note.id)
+                  }
+                }
+              },
+              [_vm._v("#" + _vm._s(note.id) + " " + _vm._s(note.name))]
+            )
+          ])
+        }),
+        0
+      )
+    : _c("p", [_vm._v("No note found")])
+}
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -27339,6 +27721,57 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
+    _vm.noteNames && _vm.noteNames.length > 0
+      ? _c("div", { staticClass: "field" }, [
+          _c("div", { staticClass: "control select is-small is-fullwidth" }, [
+            _c(
+              "select",
+              {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.selectedNoteId,
+                    expression: "selectedNoteId"
+                  }
+                ],
+                on: {
+                  change: function($event) {
+                    var $$selectedVal = Array.prototype.filter
+                      .call($event.target.options, function(o) {
+                        return o.selected
+                      })
+                      .map(function(o) {
+                        var val = "_value" in o ? o._value : o.value
+                        return val
+                      })
+                    _vm.selectedNoteId = $event.target.multiple
+                      ? $$selectedVal
+                      : $$selectedVal[0]
+                  }
+                }
+              },
+              [
+                _c(
+                  "option",
+                  { attrs: { selected: "", disabled: "", value: "0" } },
+                  [_vm._v("Select note")]
+                ),
+                _vm._v(" "),
+                _vm._l(_vm.noteNames, function(note) {
+                  return _c(
+                    "option",
+                    { key: note.id, domProps: { value: note.id } },
+                    [_vm._v(_vm._s(note.name))]
+                  )
+                })
+              ],
+              2
+            )
+          ])
+        ])
+      : _vm._e(),
+    _vm._v(" "),
     _c("div", { staticClass: "field" }, [
       _c("div", { staticClass: "control" }, [
         _c("input", {
@@ -27353,7 +27786,11 @@ var render = function() {
           ],
           ref: "newNameInput",
           staticClass: "input is-small",
-          attrs: { type: "text", required: "" },
+          attrs: {
+            type: "text",
+            required: "",
+            placeholder: "Type new task name"
+          },
           domProps: { value: _vm.newName },
           on: {
             keyup: function($event) {
@@ -27527,21 +27964,32 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "ul",
-    _vm._l(_vm.tasks, function(task) {
-      return _c("task", {
-        key: task.id,
-        attrs: {
-          task: task,
-          newDateMinValue: _vm.newDateMinValue,
-          newDateMaxValue: _vm.newDateMaxValue
-        },
-        on: { "task-update": _vm.updateTask, "task-removal": _vm.removeTask }
-      })
-    }),
-    1
-  )
+  return _vm.openNoteId
+    ? _c(
+        "ul",
+        [
+          _vm.isLoading
+            ? _c("p", [_vm._v("Loading ...")])
+            : _vm.tasks.length
+            ? _vm._l(_vm.tasks, function(task) {
+                return _c("task", {
+                  key: task.id,
+                  attrs: {
+                    task: task,
+                    newDateMinValue: _vm.newDateMinValue,
+                    newDateMaxValue: _vm.newDateMaxValue
+                  },
+                  on: {
+                    "task-update": _vm.updateTask,
+                    "task-removal": _vm.removeTask
+                  }
+                })
+              })
+            : _c("p", [_vm._v("No task found")])
+        ],
+        2
+      )
+    : _c("p", [_vm._v("No note selected")])
 }
 var staticRenderFns = []
 render._withStripped = true

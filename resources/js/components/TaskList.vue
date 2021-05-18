@@ -1,14 +1,26 @@
 <template>
         
-    <ul>
-        <task v-for="task of tasks" :key="task.id"
-            :task="task"
-            :newDateMinValue="newDateMinValue"
-            :newDateMaxValue="newDateMaxValue"
-            @task-update="updateTask"
-            @task-removal="removeTask"
-        ></task>
+    <ul v-if="openNoteId">
+
+        <p v-if="isLoading">Loading ...</p>
+
+        <template v-else-if="tasks.length">
+
+            <task v-for="task of tasks" :key="task.id"
+                :task="task"
+                :newDateMinValue="newDateMinValue"
+                :newDateMaxValue="newDateMaxValue"
+                @task-update="updateTask"
+                @task-removal="removeTask"
+            ></task>
+
+        </template>
+
+        <p v-else>No task found</p>
+
     </ul>
+
+    <p v-else>No note selected</p>
 
 </template>
 
@@ -25,7 +37,11 @@
         props: {
 
             newDateMinValue: String,
-            newDateMaxValue: String
+            newDateMaxValue: String,
+
+            // If the user has clicked on a note on the note card, its ID
+            // is used to show its tasks on the task card.
+            openNoteId: Number
 
         },
 
@@ -38,41 +54,30 @@
         data() {
             return {
     
-                tasks: []
+                tasks: [],
+
+                // A "loading" message may need to be shown in some cases
+                // (e.g., fetching data).
+                isLoading: false
 
             }
         },
 
-        created() {
-
-            this.fetchTasks();
-
-            // Echo listens for a broadcast message and fetches updated
-            // tasks whenever it gets a message.
-            window.Echo.channel('tasks')
-                .listen('TaskUpdated', (data) => {
-
-                    this.tasks = data.tasks;
-
-                    // Notification is cleared (if any).
-                    this.$emit('notification', {});
-
-                });
-
-            // TODO: Show error if offline
-
-        },
-
         methods: {
 
-            fetchTasks() {
-                axios.get('api/tasks')
+            fetchTasks(noteId) {
+                const url = '/api/notes/' + noteId;
+                axios.get(url)
                     .then(response => {
                         if (response.status === 200) {
-                            this.tasks = response.data;
+                            this.tasks = response.data.tasks;
                         }
                     })
-                    .catch(error => this.showNotification('error', error.message));
+                    .catch(error => this.$emit('notification', {
+                        type: 'error',
+                        content: error.message
+                    }))
+                    .then(() => this.isLoading = false);
             },
 
             // Since data is passed from task editor components, which
@@ -93,6 +98,38 @@
 
             showNotification(type, content) {
                 this.$emit('notification', { type, content });
+            }
+
+        },
+
+        watch: {
+
+            // Whenever a note is clicked on (i.e., "opened") on the note
+            // card, its tasks are fetched and shown on the task card. Echo
+            // stops listening to the channel for the previously opened note
+            // and starts listening for the currently-open note instead.
+            openNoteId(newId, oldId) {
+
+                // The default value of the ID is zero which is a placeholder.
+                if (this.openNoteId > 0) {
+                    this.isLoading = true;
+                    this.fetchTasks(this.openNoteId);
+                }
+
+                // Stops listening to the old note's channel.
+                Echo.leave(`note.${ oldId }`);
+
+                // Starts listening to the current note's channel.
+                Echo.channel(`note.${ newId }`)
+                    .listen('TaskUpdated', (data) => {
+
+                        this.tasks = data.tasks;
+
+                        // Notification is cleared (if any).
+                        this.$emit('notification', {});
+
+                    });
+
             }
 
         }

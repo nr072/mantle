@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\NoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +24,6 @@ Route::get('tasks', [TaskController::class, 'index']);
 Route::put('tasks/{task}', [TaskController::class, 'update']);
 Route::delete('tasks/{task}', [TaskController::class, 'destroy']);
 Route::post('tasks', [TaskController::class, 'store']);
+
+Route::get('notes', [NoteController::class, 'index']);
+Route::get('notes/{note}', [NoteController::class, 'show']);

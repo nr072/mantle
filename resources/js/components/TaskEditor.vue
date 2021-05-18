@@ -1,13 +1,27 @@
 <template>
     <div>
 
+        <div v-if="noteNames && noteNames.length > 0" class="field">
+            <div class="control select is-small is-fullwidth">
+
+                <select v-model="selectedNoteId">
+                    <option selected disabled value="0">Select note</option>
+                    <option v-for="note of noteNames" :key="note.id"
+                        :value="note.id"
+                    >{{ note.name }}</option>
+                </select>
+
+            </div>
+        </div>
+
         <div class="field">
             <div class="control">
                 <input ref="newNameInput"
                     type="text" v-model.trim="newName"
                     class="input is-small"
                     @keyup.enter="updateTask"
-                    required 
+                    required
+                    placeholder="Type new task name"
                 >
             </div>
         </div>
@@ -75,18 +89,31 @@
 
 
 <script>
-    
+
     export default {
 
         props: {
+
+            // This component can be used as both a task editor and the
+            // task adder.
+            isTaskAdder: Boolean,
 
             // When this component is used as a task editor, existing
             // task name - and, optionally, due time - will be passed.
             currentName: String,
             currentDueTime: Date,
 
+            // Minimum and maximum values for editing or setting due times.
             newDateMinValue: String,
-            newDateMaxValue: String
+            newDateMaxValue: String,
+
+            // Available note names are shown in a dropdown for adding
+            // new tasks. This is passed only to the task adder.
+            noteNames: Array,
+
+            // If a note is already open, the task adder is passed the
+            // note's ID so that the ID can be used to add new tasks.
+            openNoteId: Number
 
         },
 
@@ -99,7 +126,12 @@
                 // New 'due time' input is made up of 2 parts: a date
                 // input and a time input.
                 newDate: '',
-                newTime: ''
+                newTime: '',
+
+                // If no note is open, a note name dropdown is shown in
+                // the task adder and the user can select a note from it
+                // to create new tasks.
+                selectedNoteId: 0
 
             }
         },
@@ -145,8 +177,8 @@
 
         methods: {
 
-            // If there are new values, the new data is passed up to the
-            // parent component for update, and input values are reset.
+            // If there are new values, all the new data is passed up to
+            // the parent component for update, and input values are reset.
             updateTask() {
 
                 // A task must have a name.
@@ -161,6 +193,35 @@
                 // An update will occur only if the value changed.
                 if (this.currentName !== this.newName) {
                     data.name = this.newName;
+                }
+
+                // If this is the task adder, the note ID is added to
+                // the data.
+                if (this.isTaskAdder) {
+
+                    // If a note is already open (i.e., a note on the note
+                    // card has been clicked), its ID is used.
+                    if (this.openNoteId !== 0) {
+                        data.noteId = this.openNoteId;
+                    }
+
+                    // If no note is open, a dropdown of available note
+                    // names is showing and the selected note's ID is
+                    // used.
+                    else if (this.selectedNoteId > 0) {
+                        data.noteId = this.selectedNoteId;
+                    }
+
+                    // A new task can not be created without selecting
+                    // an existing note.
+                    else {
+                        this.$emit('notification', {
+                            type: 'error',
+                            content: 'No note selected'
+                        });
+                        return;
+                    }
+
                 }
 
                 const newDueTime = new Date(this.newDate + ' ' + this.newTime);
@@ -190,10 +251,11 @@
 
             },
 
-            // Name, date and time inputs are reset: If this is a task
-            // editor, the inputs are reset to their passed values; and
-            // if this is a task adder, the inputs are just cleared.
             resetInputs() {
+
+                // If this is a task editor, the name, date, and time
+                // inputs are reset to their passed values. If this is
+                // the task adder, they are simply cleared.
                 this.newName = this.currentName || '';
                 if (this.currentDueTime) {
                     this.newDate = this.paddedDateString;
@@ -202,6 +264,11 @@
                     this.newDate = '';
                     this.newTime = '';
                 }
+
+                // The selected value of the task adder note name dropdown
+                // is reset.
+                this.selectedNoteId = 0;
+
             }
 
         },

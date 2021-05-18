@@ -22,6 +22,7 @@
                             @notification="notification = $event"
                             :newDateMinValue="newDateMinValue"
                             :newDateMaxValue="newDateMaxValue"
+                            :openNoteId="clickedNoteId"
                         ></task-list>
 
                         <div class="mt-5">
@@ -35,11 +36,35 @@
                                 ref="taskAdderComp"
                                 :newDateMinValue="newDateMinValue"
                                 :newDateMaxValue="newDateMaxValue"
+                                :noteNames="noteNamesForDropdown"
+                                :openNoteId="clickedNoteId"
+                                :isTaskAdder="true"
                                 @task-update="addTask"
                                 @edit-cancellation="isAddingTask = false"
+                                @notification="notification = $event"
                             ></task-adder>
 
                         </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="column is-half">
+                <div class="card has-background-white-bis">
+
+                    <header class="card-header">
+                        <p class="card-header-title">notes</p>
+                    </header>
+
+                    <div class="card-content">
+
+                        <note-list
+                            @notification="notification = $event"
+                            @note-opened="clickedNoteId = $event"
+                            @notes-fetched="notes = $event"
+                        ></note-list>
 
                     </div>
 
@@ -60,6 +85,7 @@
     import NotificationArea from './NotificationArea.vue';
     import TaskList from './TaskList.vue';
     import TaskAdder from './TaskEditor.vue';
+    import NoteList from './NoteList.vue';
     
     export default {
 
@@ -67,7 +93,8 @@
 
             NotificationArea,
             TaskList,
-            TaskAdder // Used as both an editor and an adder
+            TaskAdder, // Used as both an editor and an adder
+            NoteList
 
         },
 
@@ -86,7 +113,20 @@
                 // a maximum value for setting a due time. This value is
                 // not reactive. It is used simply for computed values
                 // that are passed to all task editor components.
-                now: new Date()
+                now: new Date(),
+
+                // The ID of the note on the note card the user clicked.
+                // On fresh load, it is the default value which is just
+                // a placeholder. This ID is used to:
+                //   - show the clicked note's tasks on the task card,
+                //   - pre-select the note name when the user tries to add
+                //     a new task to an existing note.
+                clickedNoteId: 0,
+
+                // Available note names are shown in a dropdown inside the
+                // task adder for adding new tasks. This array is passed
+                // to the task adder.
+                notes: []
 
             }
         },
@@ -104,6 +144,17 @@
             newDateMaxValue() {
                 const nowPlus1Year = new Date(this.now.getTime() + 31536000000);
                 return nowPlus1Year.toISOString().split('T')[0];
+            },
+
+            // If no note is open (i.e., no note on the note card has been
+            // clicked on), available note names and IDs are passed to the
+            // task adder so that a dropdown of task names can be shown on
+            // the task card for adding new tasks.
+            // TODO: Change this if structure of "notes" changes
+            noteNamesForDropdown() {
+                if (this.clickedNoteId === 0) {
+                    return this.notes;
+                }
             }
 
         },
@@ -122,7 +173,10 @@
             addTask(data) {
                 const url = 'api/tasks';
                 axios.post(url, data)
-                    .catch(error => this.showNotification('error', error.message));
+                    .catch(error => this.notification = {
+                        type: 'error',
+                        content: error.message
+                    });
 
                 this.isAddingTask = false;
             }

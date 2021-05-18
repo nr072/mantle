@@ -39,18 +39,23 @@ class TaskController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'bail|required|string|max:150',
-            'dueTime' => 'bail|nullable|date'
+            'dueTime' => 'bail|nullable|date',
+            'noteId' => 'bail|required|exists:notes,id' // Task must belong to an existing note
         ]);
 
         $task = new Task;
+
         $task->name = $validatedData['name'];
+        $task->note_id = $validatedData['noteId'];
+
         if (isset($validatedData['dueTime'])) {
             $task->due_time = $validatedData['dueTime'];
         }
+
         $task->save();
 
         // A message is broadcast to Echo listening to a public channel.
-        broadcast( new TaskUpdated() );
+        broadcast( new TaskUpdated($task->note_id) );
     }
 
     /**
@@ -102,7 +107,7 @@ class TaskController extends Controller
         $task->save();
 
         // A message is broadcast to Echo listening to a public channel.
-        broadcast( new TaskUpdated() );
+        broadcast( new TaskUpdated($task->note_id) );
     }
 
     /**
@@ -116,6 +121,6 @@ class TaskController extends Controller
         $task->delete();
 
         // A message is broadcast to Echo listening to a public channel.
-        broadcast( new TaskUpdated() );
+        broadcast( new TaskUpdated($task->note_id) );
     }
 }
