@@ -4,10 +4,18 @@
 
     <ul v-else-if="notes.length">
 
-        <li v-for="note of notes">
-            <button class="button is-small is-dark is-inverted mb-2"
-                @click="$emit('note-opened', note.id)"
-            >#{{ note.id }} {{ note.name }}</button>
+        <li v-for="note of notes" class="is-flex is-align-items-center mb-2">
+
+            <button class="button is-small is-text note-name"
+                :class="openNoteId === note.id && 'is-active'"
+                @click="openNoteId = note.id; $emit('note-opened', note.id)"
+            >{{ note.name }}</button>
+
+            <span v-if="note.numOfNotDone"
+                class="tag is-small is-light"
+                :title="note.numOfNotDone + ' task' + (note.numOfNotDone > 1 ? 's' : '') + ' (not done)'"
+            >{{ note.numOfNotDone }}</span>
+
         </li>
 
     </ul>
@@ -15,6 +23,27 @@
     <p v-else>No note found</p>
 
 </template>
+
+
+
+
+
+<style scoped>
+
+    .note-name.is-text {
+        text-decoration: none;
+    }
+    .note-name.is-text:hover,
+    .note-name.is-text.is-hovered,
+    .note-name.is-text:focus,
+    .note-name.is-text.is-focused,
+    .note-name.is-text:active,
+    .note-name.is-text.is-active {
+        color: var(--color-1);
+        background-color: transparent;
+    }
+
+</style>
 
 
 
@@ -31,7 +60,11 @@
 
                 // A "loading" message may need to be shown in some cases
                 // (e.g., fetching data).
-                isLoading: false
+                isLoading: false,
+
+                // Used to show the currently-open note name as highlighted.
+                // Default value is just a placeholder.
+                openNoteId: 0
 
             }
         },
@@ -45,6 +78,11 @@
             this.fetchNotes(() => {
                 this.$emit('notes-fetched', this.notes);
             });
+
+            Echo.channel('notes')
+                .listen('NoteListNumsOfTasksUpdated', (data) => {
+                    this.notes = data.notes;
+                });
 
         },
 

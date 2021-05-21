@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Note;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use DB;
 
 class NoteController extends Controller
 {
@@ -15,19 +16,24 @@ class NoteController extends Controller
      */
     public function index()
     {
-        $data = Note::latest('updated_at')
-            // ->limit(10)
-            ->pluck('name', 'id');
 
-        $notes = [];
-        foreach ($data as $id => $name) {
-            array_push($notes, [
-                'id' => $id,
-                'name' => $name
-            ]);
-        }
+        // Counts of "not done" tasks for each note.
+        $numsOfNotDoneTasks = DB::table('tasks')
+            ->where('is_done', 0)
+            ->select('note_id as noteId', DB::raw('COUNT(note_id) as numOfNotDone'))
+            ->groupBy('note_id');
+
+        // "Joined" to get other note data (e.g., note name).
+        $notes = DB::table('notes')
+            ->leftJoinSub($numsOfNotDoneTasks, 'nums_of_not_done', function ($join) {
+                $join->on('nums_of_not_done.noteId', '=', 'notes.id');
+            })
+            ->select('id', 'name', 'noteId', 'numOfNotDone')
+            // ->limit(20)
+            ->get();
 
         return $notes;
+
     }
 
     /**

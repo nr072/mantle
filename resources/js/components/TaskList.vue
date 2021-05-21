@@ -20,7 +20,10 @@
 
     </ul>
 
-    <p v-else>No note selected</p>
+    <div v-else class="content">
+        <p>No note selected</p>
+        <p>Select one on the note card to see tasks here</p>
+    </div>
 
 </template>
 
