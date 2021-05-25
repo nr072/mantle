@@ -55,7 +55,7 @@ class TaskController extends Controller
         $task->save();
 
         // A message is broadcast to Echo listening to a public channel.
-        broadcast( new TaskUpdated($task->note_id) );
+        event( new TaskUpdated($task->note_id) );
     }
 
     /**
@@ -107,7 +107,7 @@ class TaskController extends Controller
         $task->save();
 
         // A message is broadcast to Echo listening to a public channel.
-        broadcast( new TaskUpdated($task->note_id) );
+        event( new TaskUpdated($task->note_id) );
     }
 
     /**
@@ -121,6 +121,6 @@ class TaskController extends Controller
         $task->delete();
 
         // A message is broadcast to Echo listening to a public channel.
-        broadcast( new TaskUpdated($task->note_id) );
+        event( new TaskUpdated($task->note_id) );
     }
 }

@@ -2115,9 +2115,13 @@ __webpack_require__.r(__webpack_exports__);
     this.isLoading = true;
     this.fetchNotes(function () {
       _this.$emit('notes-fetched', _this.notes);
-    });
-    Echo.channel('notes').listen('NoteListNumsOfTasksUpdated', function (data) {
-      _this.notes = data.notes;
+    }); // When the status of a task changes, the "NoT" badge beside
+    // that task's note name on the note card is updated.
+
+    Echo.channel('notes').listen('TaskStatusChanged', function (note) {
+      if (note && Object.keys(note).length) {
+        _this.updateNotBadgeNumber(note);
+      }
     });
   },
   methods: {
@@ -2138,6 +2142,33 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function () {
         return _this2.isLoading = false;
       });
+    },
+    // Updates the numbers of pending and done tasks in a "numbers
+    // of tasks" or "NoT" badge.
+    // One or both numbers are passed, and the matching note from
+    // the reactive "notes" array is updated accordingly.
+    updateNotBadgeNumber: function updateNotBadgeNumber(updatedNote) {
+      if (!updatedNote.id || !updatedNote.numOfPendingTasks && !updatedNote.numOfDoneTasks) {
+        return;
+      }
+
+      var length = this.notes.length;
+
+      for (var i = 0; i < length; ++i) {
+        var note = this.notes[i]; // The matching note's number(s) is (are) updated.
+
+        if (note.id === updatedNote.id) {
+          if (note.numOfPendingTasks) {
+            note.numOfPendingTasks = updatedNote.numOfPendingTasks;
+          }
+
+          if (note.numOfDoneTasks) {
+            note.numOfDoneTasks = updatedNote.numOfDoneTasks;
+          }
+
+          break;
+        }
+      }
     }
   }
 });
@@ -27580,20 +27611,20 @@ var render = function() {
                 [_vm._v(_vm._s(note.name))]
               ),
               _vm._v(" "),
-              note.numOfNotDone
+              note.numOfPendingTasks
                 ? _c(
                     "span",
                     {
                       staticClass: "tag is-small is-light",
                       attrs: {
                         title:
-                          note.numOfNotDone +
+                          note.numOfPendingTasks +
                           " task" +
-                          (note.numOfNotDone > 1 ? "s" : "") +
-                          " (not done)"
+                          (note.numOfPendingTasks > 1 ? "s" : "") +
+                          " (pending)"
                       }
                     },
-                    [_vm._v(_vm._s(note.numOfNotDone))]
+                    [_vm._v(_vm._s(note.numOfPendingTasks))]
                   )
                 : _vm._e()
             ]

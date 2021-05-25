@@ -11,10 +11,10 @@
                 @click="openNoteId = note.id; $emit('note-opened', note.id)"
             >{{ note.name }}</button>
 
-            <span v-if="note.numOfNotDone"
+            <span v-if="note.numOfPendingTasks"
                 class="tag is-small is-light"
-                :title="note.numOfNotDone + ' task' + (note.numOfNotDone > 1 ? 's' : '') + ' (not done)'"
-            >{{ note.numOfNotDone }}</span>
+                :title="note.numOfPendingTasks + ' task' + (note.numOfPendingTasks > 1 ? 's' : '') + ' (pending)'"
+            >{{ note.numOfPendingTasks }}</span>
 
         </li>
 
@@ -79,9 +79,13 @@
                 this.$emit('notes-fetched', this.notes);
             });
 
+            // When the status of a task changes, the "NoT" badge beside
+            // that task's note name on the note card is updated.
             Echo.channel('notes')
-                .listen('NoteListNumsOfTasksUpdated', (data) => {
-                    this.notes = data.notes;
+                .listen('TaskStatusChanged', (note) => {
+                    if(note && Object.keys(note).length) {
+                        this.updateNotBadgeNumber(note);
+                    }
                 });
 
         },
@@ -103,6 +107,38 @@
                         content: error.message
                     }))
                     .then(() => this.isLoading = false);
+            },
+
+            // Updates the numbers of pending and done tasks in a "numbers
+            // of tasks" or "NoT" badge.
+            // One or both numbers are passed, and the matching note from
+            // the reactive "notes" array is updated accordingly.
+            updateNotBadgeNumber(updatedNote) {
+
+                if (
+                    !updatedNote.id
+                    || (!updatedNote.numOfPendingTasks && !updatedNote.numOfDoneTasks)
+                ) {
+                    return;
+                }
+
+                const length = this.notes.length;
+                for (let i = 0; i < length; ++i) {
+                    const note = this.notes[i];
+
+                    // The matching note's number(s) is (are) updated.
+                    if (note.id === updatedNote.id) {
+                        if (note.numOfPendingTasks) {
+                            note.numOfPendingTasks = updatedNote.numOfPendingTasks;
+                        }
+                        if (note.numOfDoneTasks) {
+                            note.numOfDoneTasks = updatedNote.numOfDoneTasks;
+                        }
+                        break;
+                    }
+
+                }
+
             }
 
         }

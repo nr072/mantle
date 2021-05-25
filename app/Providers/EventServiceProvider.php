@@ -7,7 +7,7 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use App\Events\TaskUpdated;
-use App\Listeners\UpdateNoteListNumsOfTasks;
+use App\Listeners\UpdateNotBadge;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -21,7 +21,7 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         TaskUpdated::class => [
-            UpdateNoteListNumsOfTasks::class
+            UpdateNotBadge::class // Will update "NoT" badges on the web page
         ]
     ];
 

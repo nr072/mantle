@@ -20,7 +20,7 @@ class NoteController extends Controller
         // Counts of "not done" tasks for each note.
         $numsOfNotDoneTasks = DB::table('tasks')
             ->where('is_done', 0)
-            ->select('note_id as noteId', DB::raw('COUNT(note_id) as numOfNotDone'))
+            ->select('note_id as noteId', DB::raw('count(note_id) as numOfPendingTasks'))
             ->groupBy('note_id');
 
         // "Joined" to get other note data (e.g., note name).
@@ -28,7 +28,7 @@ class NoteController extends Controller
             ->leftJoinSub($numsOfNotDoneTasks, 'nums_of_not_done', function ($join) {
                 $join->on('nums_of_not_done.noteId', '=', 'notes.id');
             })
-            ->select('id', 'name', 'noteId', 'numOfNotDone')
+            ->select('id', 'name', 'noteId', 'numOfPendingTasks')
             // ->limit(20)
             ->get();
 
