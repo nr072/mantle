@@ -71,8 +71,8 @@
                         content: error.message
                     }))
                     .then(() => {
-                        this.name = '';
                         this.isAddingNote = false;
+                        this.name = '';
                     });
             }
 

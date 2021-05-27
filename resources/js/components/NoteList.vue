@@ -88,6 +88,14 @@
                     }
                 });
 
+            // The note list is updated whenever a new note is created.
+            Echo.channel('notes')
+                .listen('NoteCreated', (data) => {
+                    if (data && data.notes) {
+                        this.notes = data.notes;
+                    }
+                });
+
         },
 
         methods: {
@@ -128,10 +136,10 @@
 
                     // The matching note's number(s) is (are) updated.
                     if (note.id === updatedNote.id) {
-                        if (note.numOfPendingTasks) {
+                        if (updatedNote.numOfPendingTasks) {
                             note.numOfPendingTasks = updatedNote.numOfPendingTasks;
                         }
-                        if (note.numOfDoneTasks) {
+                        if (updatedNote.numOfDoneTasks) {
                             note.numOfDoneTasks = updatedNote.numOfDoneTasks;
                         }
                         break;

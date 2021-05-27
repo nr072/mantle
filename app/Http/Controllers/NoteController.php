@@ -6,6 +6,7 @@ use App\Models\Note;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use DB;
+use App\Events\NoteCreated;
 
 class NoteController extends Controller
 {
@@ -51,6 +52,10 @@ class NoteController extends Controller
         $note = new Note;
         $note->name = $validatedData['name'];
         $note->save();
+
+        // An event is fired so that the note list on the web page can
+        // be updated.
+        NoteCreated::dispatch();
     }
 
     /**

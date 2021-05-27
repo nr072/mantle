@@ -2118,8 +2118,8 @@ __webpack_require__.r(__webpack_exports__);
           content: error.message
         });
       }).then(function () {
-        _this2.name = '';
         _this2.isAddingNote = false;
+        _this2.name = '';
       });
     }
   }
@@ -2217,6 +2217,12 @@ __webpack_require__.r(__webpack_exports__);
       if (note && Object.keys(note).length) {
         _this.updateNotBadgeNumber(note);
       }
+    }); // The note list is updated whenever a new note is created.
+
+    Echo.channel('notes').listen('NoteCreated', function (data) {
+      if (data && data.notes) {
+        _this.notes = data.notes;
+      }
     });
   },
   methods: {
@@ -2253,11 +2259,11 @@ __webpack_require__.r(__webpack_exports__);
         var note = this.notes[i]; // The matching note's number(s) is (are) updated.
 
         if (note.id === updatedNote.id) {
-          if (note.numOfPendingTasks) {
+          if (updatedNote.numOfPendingTasks) {
             note.numOfPendingTasks = updatedNote.numOfPendingTasks;
           }
 
-          if (note.numOfDoneTasks) {
+          if (updatedNote.numOfDoneTasks) {
             note.numOfDoneTasks = updatedNote.numOfDoneTasks;
           }
 
