@@ -59,6 +59,8 @@
 
                     <div class="card-content">
 
+                        <note-adder></note-adder>
+
                         <note-list
                             @notification="notification = $event"
                             @note-opened="clickedNoteId = $event"
@@ -85,6 +87,7 @@
     import TaskList from './TaskList.vue';
     import TaskAdder from './TaskEditor.vue';
     import NoteList from './NoteList.vue';
+    import NoteAdder from './NoteAdder.vue';
     
     export default {
 
@@ -93,7 +96,8 @@
             NotificationArea,
             TaskList,
             TaskAdder, // Used as both an editor and an adder
-            NoteList
+            NoteList,
+            NoteAdder
 
         },
 

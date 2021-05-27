@@ -44,7 +44,13 @@ class NoteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'bail|required|string|max:30'
+        ]);
+
+        $note = new Note;
+        $note->name = $validatedData['name'];
+        $note->save();
     }
 
     /**

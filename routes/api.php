@@ -27,3 +27,4 @@ Route::post('tasks', [TaskController::class, 'store']);
 
 Route::get('notes', [NoteController::class, 'index']);
 Route::get('notes/{note}', [NoteController::class, 'show']);
+Route::post('notes', [NoteController::class, 'store']);
